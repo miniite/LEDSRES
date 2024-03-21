@@ -1,0 +1,12 @@
+<nav class="bg-white border-gray-200">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+        <a href="/" class="flex items-center">
+            <img src="{% static 'images/logo.png' %}" class="h-8 mr-3" alt="Logo" />
+            <span class="self-center text-2xl font-semibold whitespace-nowrap">Toka</span>
+        </a>
+        <ul class="font-medium flex flex-row space-x-8">
+            <li><a href="{% url 'home' %}" class="text-green-700">Home</a></li>
+            <li><a href="{% url 'profile' %}" class="text-green-700">Profile</a></li>
+        </ul>
+    </div>
+</nav>
