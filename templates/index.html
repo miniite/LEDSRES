@@ -1,1 +1,20 @@
-<head>hai</head>
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% include 'partials/navbar.html' %}
+
+<!-- <div class="container xl:mx-20 mx-auto">
+    <h1 class="text-3xl font-bold text-center md:text-left my-4">                hello world</h1>
+    
+</div> -->
+<div>
+        <img src="https://i.ibb.co/PN08MJt/Pic.png" class="w-full" alt="Logo" />
+</div>
+<div>
+    <h1 class="text-black px-10">About Us</h1>
+    <p class="text-black px-10">Revolutionize energy distribution with our innovative system! Predicting loads and distributing energy through a unique bidding process powered by blockchain technology. Join us in shaping a sustainable future!</p>
+</div>
+
+{% include 'partials/footer.html' %}
+{% endblock content %}
