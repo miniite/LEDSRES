@@ -19,20 +19,61 @@
                 {% csrf_token %}
                 <div>
                     <label class="text_G block mb-2 text-sm font-medium">Name</label>
-                    <input  name="name" id="name" class="text_G bg_BoxLG border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-emerald-500 dark:focus:border-emerald-500" placeholder="Name os Station" required>
+                    <input  name="name" id="name" class="text_G bg_BoxLG  border_black  sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5  dark:placeholder-gray-400  dark:focus:ring-emerald-500 dark:focus:border-emerald-500" placeholder="Name of Station" required>
                 </div>
                 <div>
                     <label for="email" class="text_G block mb-2 text-sm font-medium">Email</label>
-                    <input type="email" name="email" id="email" class="text_G bg_BoxLG border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-emerald-500 dark:focus:border-emerald-500" placeholder="name@gmail.com" required>
+                    <input type="email" name="email" id="email" class="text_G bg_BoxLG  border_black  sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5  dark:placeholder-gray-400  dark:focus:ring-emerald-500 dark:focus:border-emerald-500" placeholder="name@gmail.com" required>
+                </div>
+
+                <style>
+                    /* CSS for dropdown select box */
+                    .dropdown_style {
+                        font-size: 12px; /* Adjust font size as necessary */
+                        width: 100%; /* Ensure dropdown fills the container */
+                        padding: 8px 10px; /* Padding inside the select box */
+                        border: 0.75px solid border_black; /* Border for the select box */
+                        border-radius: 0.375rem; /* Rounded corners */
+                        background-color: bg_BoxLG; /* Light grey background */
+                        color: text_G; /* Text color */
+                    }
+            
+                    /* CSS for options within the dropdown to increase spacing */
+                    .dropdown_style option {
+                        padding: 8px 10px; /* Add padding to increase spacing */
+                        line-height: 20px; /* Increase line height for more vertical spacing */
+                        background-color: bg_BoxLG; /* White background for options */
+                        color: text_G; /* Text color */
+                    }
+            
+                    /* Focus styles for accessibility */
+                    .dropdown_style:focus {
+                        ring: 3px; /* Focus ring width */
+                        ring-color: #4CAF50; /* Green focus ring color */
+                        border-color: #4CAF50; /* Green border on focus */
+                    }
+                </style>
+                <div>
+                    <label for="region" class="text_G block mb-2 text-sm font-medium">Region</label>
+                    <select name="region" id="region" class="dropdown_style text_G bg_BoxLG  border_black  sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5   dark:focus:ring-emerald-500 dark:focus:border-emerald-500">
+                        <option class="text_G" value="North Malabar">North Malabar</option>
+                        <option class="text_G" value="North">North</option>
+                        <option class="text_G" value="Central">Central</option>
+                        <option class="text_G" value="South">South</option>
+                    </select>
                 </div>
                 <div>
                     <label for="password" class="text_G block mb-2 text-sm font-medium">Password</label>
-                    <input type="password" name="password" id="password" placeholder="••••••••" class="bg_BoxLG border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-emerald-500 dark:focus:border-emerald-500" required>
+                    <input type="password" name="password" id="password" placeholder="••••••••" class="bg_BoxLG  border_black  sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5  dark:placeholder-gray-400  dark:focus:ring-emerald-500 dark:focus:border-emerald-500" required>
+                </div>
+                <div>
+                    <label for="password_confirmation" class="text_G block mb-2 text-sm font-medium">Confirm Password</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" placeholder="••••••••" class="bg_BoxLG  border_black sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5  dark:placeholder-gray-400  dark:focus:ring-emerald-500 dark:focus:border-emerald-500" required>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-start">
                     <div class="flex items-center h-5">
-                        <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-emerald-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-emerald-600 dark:ring-offset-gray-800">
+                        <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4  border_black rounded bg-gray-50 focus:ring-3 focus:ring-emerald-300  dark:focus:ring-emerald-600 dark:ring-offset-gray-800">
                     </div>
                     <div class="ml-3 text-sm">
                         <label for="remember" class="text_G">Remember me</label>
