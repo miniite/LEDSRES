@@ -1,5 +1,5 @@
 <nav class="bg-[#EBF5EA] border-gray-200">
-    <div class=" flex items-center justify-between mx-auto py-4 px-6">
+    <div class="flex items-center justify-between mx-auto py-4 px-6">
         <a href="/" class="flex items-center">
             <img src="https://i.ibb.co/r61vC8H/logo.png" class="h-6 mr-1" alt="Logo" />
         </a>
@@ -7,19 +7,34 @@
         <div class="hidden md:block md:w-auto">
             <ul class="flex space-x-8 text-[#53A051]">
                 <li>
-                    <a href="/" class=" hover:underline">Home</a>
+                    <a href="/" class="hover:underline">Home</a>
                 </li>
                 <li>
-                    <a href="{% url 'insight' %}" class=" hover:underline">Insights</a>
+                    <a href="{% url 'insight' %}" class="hover:underline">Insights</a>
                 </li>
                 <li>
-                    <a href="{% url 'trade' %}" class=" hover:underline">Trade</a>
+                    <a href="{% url 'trade' %}" class="hover:underline">Trade</a>
                 </li>
+                {% if user.is_authenticated %}
+                
                 <li>
-                    <a href="{% url 'profile' %}" class=" hover:underline">
-                        <img src="path_to_profile_image.png" class="h-6" alt="Profile" />
+                    <a href="{% url 'profile' %}" class="hover:underline">
+                        <img src="{{ user.profile.profile_image.url }}" class="h-6" alt="Profile" />
                     </a>
                 </li>
+                <li>
+                    <a href="{% url 'logout' %}" class="hover:underline">
+                        Logout
+                    </a>
+                </li>
+                {% else %}
+                <li>
+                    <a href="{% url 'signup' %}" class="hover:underline">Sign Up</a>
+                </li>
+                <li>
+                    <a href="{% url 'login' %}" class="hover:underline">Login</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>

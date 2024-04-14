@@ -1,10 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views import View
 from django.urls import reverse
 from .forms import SignUpForm
+from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.http import HttpResponse
+
+
 
 
 # Create your views here.
@@ -40,7 +44,7 @@ class CustomLoginView(View):
         if user is not None:
             login(request, user)
              # Redirect to a success page
-            return redirect('index.html')
+            return redirect('/')
         else:
             message = "Invalid email or password. Please try again."
             messages.error(request, message)  # Display error message
@@ -56,12 +60,16 @@ def CustomLogout(request):
     return HttpResponse("Loggged out")
 
 
+
 def registration(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect(reverse('login'))  # Redirect to login page after successful registration
+            return redirect(reverse('login'))  # Redirect to the login page after successful registration
+        else:
+            # If the form is not valid, rerender the signup page with the form to show errors
+            return render(request, 'signup.html', {'form': form})
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
@@ -78,3 +86,8 @@ def trading(request):
 
 def into_insight(request):
     return render(request,"insight.html")
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('/') 

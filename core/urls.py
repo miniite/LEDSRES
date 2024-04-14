@@ -1,6 +1,6 @@
 from django.urls import path, include 
 
-from .views import root, CustomLoginView, registration, prof, trading, into_insight
+from .views import root, CustomLoginView, registration, prof, trading, into_insight, logout_view
 
 
 urlpatterns = [
@@ -9,5 +9,6 @@ urlpatterns = [
     path('signup/', registration, name="signup"),
     path('profile/', prof, name="profile"),
     path('trade/', trading, name="trade"),
-    path('insight/', into_insight, name="insight")
+    path('insight/', into_insight, name="insight"),
+    path('logout/', logout_view, name="logout")
 ]

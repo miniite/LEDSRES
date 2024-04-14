@@ -1,6 +1,7 @@
 # Create your models here
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from location_field.models.plain import PlainLocationField
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -40,5 +41,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class Address(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    city = models.CharField(max_length=100)
+    location = PlainLocationField(based_fields=['city'], zoom=7)
+
+    def __str__(self):
+        return f"{self.user.email} {self.city}"
 
 
