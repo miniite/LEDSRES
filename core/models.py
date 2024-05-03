@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from location_field.models.plain import PlainLocationField
+from django.utils import timezone
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -33,6 +35,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     parent_company = models.CharField(max_length=200)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    eth_address = models.CharField(max_length=200, null=True, blank=True)
 
     objects = CustomUserManager()
 
@@ -52,3 +55,45 @@ class Address(models.Model):
         return f"{self.user.email} {self.city}"
 
 
+
+
+class Auction(models.Model):
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    start_bid = models.DecimalField(max_digits=10, decimal_places=2)
+    current_bid = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    end_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='auctions')
+
+    def __str__(self):
+        return f"{self.created_at} - {self.quantity}"
+
+    def is_bid_allowed(self, user):
+        current_time = timezone.now()
+
+        # Check if auction has ended
+        if current_time > self.end_date:
+            return False
+
+        # Check if user has already placed a bid
+        if Bid.objects.filter(user=user, auction=self).exists():
+            return False
+
+        # Check if it's before 12 AM
+        if current_time.hour >= 0 and current_time.hour < 12:
+            return False
+
+        return True
+
+    def has_user_bid(self, user):
+        return Bid.objects.filter(user=user, auction=self).exists()
+
+class Bid(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    bid_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.name} - {self.amount}"

@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+Auction DApp
+{% endblock %}
+
+{% block content %}
+{% include 'partials/navbar.html' %}
+    <h1>Auction DApp</h1>
+    <div>
+        <input type="text" id="energyAmount" placeholder="Enter energy amount"/>
+        <select id="unitOfEnergy">
+            <option value="kWh">kWh</option>
+            <option value="MWh">MWh</option>
+        </select>
+        <button onclick="startAuction()">Start Auction</button>
+    </div>
+    <div>
+        <input type="number" id="auctionId" placeholder="Auction ID for bid"/>
+        <input type="text" id="bidValue" placeholder="Enter your bid amount in ETH"/>
+        <button onclick="placeBid()">Place Bid</button>
+    </div>
+    <div>
+        <input type="number" id="endAuctionId" placeholder="Auction ID to end"/>
+        <button onclick="endAuction()">End Auction</button>
+    </div>
+    <div id="status"></div>
+
+    <div id="auctionsDisplay"></div>
+
+    <script>
+        let web3;
+        let auctionContract;
+        const auctionEndOfDay = new Date().setHours(23, 59, 0, 0);
+
+        window.addEventListener('load', async function() {
+            if (typeof window.ethereum !== 'undefined') {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await ethereum.enable();
+                    const accounts = await web3.eth.getAccounts();
+                    const contractAddress = '0x07A714FE461487b2A46948d25cc83d932Dc92E3B';
+                    const contractABI = [
+                    {
+                        "anonymous": false,
+                        "inputs": [
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "auctionId",
+                                "type": "uint256"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "address",
+                                "name": "initiator",
+                                "type": "address"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "endTime",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "AuctionCreated",
+                        "type": "event"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "auctionId",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "auctionEnd",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "anonymous": false,
+                        "inputs": [
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "auctionId",
+                                "type": "uint256"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "address",
+                                "name": "winner",
+                                "type": "address"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "amount",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "AuctionEnded",
+                        "type": "event"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "auctionId",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "bid",
+                        "outputs": [],
+                        "stateMutability": "payable",
+                        "type": "function"
+                    },
+                    {
+                        "anonymous": false,
+                        "inputs": [
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "auctionId",
+                                "type": "uint256"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "address",
+                                "name": "bidder",
+                                "type": "address"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "amount",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "HighestBidIncreased",
+                        "type": "event"
+                    },
+                    {
+                        "inputs": [],
+                        "name": "startAuction",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "address",
+                                "name": "participant",
+                                "type": "address"
+                            }
+                        ],
+                        "name": "verifyParticipant",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "auctionId",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "withdraw",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "auctions",
+                        "outputs": [
+                            {
+                                "internalType": "address payable",
+                                "name": "beneficiary",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "auctionEndTime",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "highestBidder",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "highestBid",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "bool",
+                                "name": "active",
+                                "type": "bool"
+                            }
+                        ],
+                        "stateMutability": "view",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [],
+                        "name": "nextAuctionId",
+                        "outputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "",
+                                "type": "uint256"
+                            }
+                        ],
+                        "stateMutability": "view",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "address",
+                                "name": "",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "userDailyAuctionStarted",
+                        "outputs": [
+                            {
+                                "internalType": "bool",
+                                "name": "",
+                                "type": "bool"
+                            }
+                        ],
+                        "stateMutability": "view",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "address",
+                                "name": "",
+                                "type": "address"
+                            }
+                        ],
+                        "name": "verifiedParticipants",
+                        "outputs": [
+                            {
+                                "internalType": "bool",
+                                "name": "",
+                                "type": "bool"
+                            }
+                        ],
+                        "stateMutability": "view",
+                        "type": "function"
+                    }
+                ];
+                auctionContract = new web3.eth.Contract(contractABI, contractAddress);
+                    web3.eth.defaultAccount = accounts[0];
+                    document.getElementById('status').innerHTML = 'Connected: ' + web3.eth.defaultAccount;
+                    displayAuctions();
+                } catch (error) {
+                    document.getElementById('status').innerHTML = 'Error: ' + error.message;
+                }
+            } else {
+                document.getElementById('status').innerHTML = 'Error: Please install MetaMask.';
+            }
+        });
+
+    function startAuction() {
+        const energyAmount = document.getElementById('energyAmount').value;
+        const unitOfEnergy = document.getElementById('unitOfEnergy').value;
+
+        auctionContract.methods.startAuction(energyAmount, unitOfEnergy).send({
+            from: web3.eth.defaultAccount
+        }).then(function(receipt) {
+            document.getElementById('status').innerHTML = 'Auction started successfully: ' + receipt.transactionHash;
+        }).catch(function(error) {
+            document.getElementById('status').innerHTML = 'Failed to start auction: ' + error.message;
+        });
+    }
+
+    function placeBid() {
+        const auctionId = document.getElementById('auctionId').value;
+        const bidAmount = document.getElementById('bidValue').value;
+        const bidAmountWei = web3.utils.toWei(bidAmount, 'ether');
+
+        auctionContract.methods.bid(auctionId).send({
+            from: web3.eth.defaultAccount,
+            value: bidAmountWei
+        }).then(function(receipt) {
+            document.getElementById('status').innerHTML = 'Bid placed successfully: ' + receipt.transactionHash;
+        }).catch(function(error) {
+            document.getElementById('status').innerHTML = 'Failed to place bid: ' + error.message;
+        });
+    }
+
+    function endAuction() {
+        const auctionId = document.getElementById('endAuctionId').value;
+
+        auctionContract.methods.endAuction(auctionId).send({
+            from: web3.eth.defaultAccount
+        }).then(function(receipt) {
+            document.getElementById('status').innerHTML = 'Auction ended successfully: ' + receipt.transactionHash;
+        }).catch(function(error) {
+            document.getElementById('status').innerHTML = 'Failed to end auction: ' + error.message;
+        });
+    }
+
+    async function displayAuctions() {
+        const auctions = await auctionContract.methods.getAllActiveAuctions().call();
+        const auctionDisplay = document.getElementById('auctionsDisplay');
+        auctionDisplay.innerHTML = '<h2>Live Auctions</h2>';
+        let tableHTML = '<table><tr><th>ID</th><th>Creator</th><th>Energy Amount</th><th>Time Left</th></tr>';
+        auctions.forEach(auction => {
+            const timeLeft = ((auctionEndOfDay - new Date()) / 1000 / 60).toFixed(0); // in minutes
+            tableHTML += `<tr><td>${auction.auctionId}</td><td>${auction.beneficiary}</td><td>${auction.energyAmount} ${auction.unitOfEnergy}</td><td>${timeLeft} minutes</td></tr>`;
+        });
+        tableHTML += '</table>';
+        auctionDisplay.innerHTML += tableHTML;
+    }
+</script>
+{% endblock %}

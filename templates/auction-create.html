@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+{% include 'partials/navbar.html' %}
+
+<!-- component -->
+<div class="flex items-center justify-center p-12">
+    <!-- Author: FormBold Team -->
+    <!-- Learn More: https://formbold.com -->
+    <div class="mx-auto w-full max-w-[550px]">
+      <form action="" method="POST">
+        {% csrf_token %}
+        <div class="mb-5">
+          <label
+            for="quantity"
+            class="mb-3 block text-base font-medium text-[#07074D]"
+          >
+          Quantity
+          </label>
+          <input
+            type="text"
+            name="quantity"
+            id="quantity"
+            placeholder="Quantity in mu/mkw"
+            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+          />
+        </div>
+        <div class="mb-5">
+          <label
+            for="initial Bid"
+            class="mb-3 block text-base font-medium text-[#07074D]"
+          >
+            Start Bid amount
+          </label>
+          <input
+            type="text"
+            name="bid"
+            id="bid"
+            placeholder="100 inr"
+            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+          />
+        </div>
+        
+        <div>
+          <button
+          type="submit"
+            class="hover:shadow-form rounded-md bg_G py-3 px-8 text-base font-semibold text-white outline-none"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% include 'partials/footer.html' %}
+{% endblock content %}
