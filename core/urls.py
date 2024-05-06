@@ -1,6 +1,6 @@
 from django.urls import path, include 
 
-from .views import root, CustomLoginView, registration, prof, auctions, into_insight, logout_view, auctionCreate, place_bid
+from .views import root, CustomLoginView, registration, prof, auctions, into_insight, logout_view, auctionCreate, place_bid, insights
 
 
 urlpatterns = [
@@ -12,5 +12,6 @@ urlpatterns = [
     path('create-auction/', auctionCreate, name="create-auction"),
     path('<auction_id>/bid', place_bid, name="place_bid"),
     path('insight/', into_insight, name="insight"),
-    path('logout/', logout_view, name="logout")
+    path('logout/', logout_view, name="logout"),
+    path('insights/', insights, name="insights")
 ]

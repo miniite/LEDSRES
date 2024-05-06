@@ -11,7 +11,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('name', 'region', 'parent_company')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'is_active', 'groups', 'user_permissions')}),
-        ('Wallet info', {'fields': ('eth_address',)}),
+        ('Wallet info', {'fields': ('eth_address','private_address')}),
     )
     add_fieldsets = (
         (None, {

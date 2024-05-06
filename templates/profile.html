@@ -6,17 +6,24 @@
 
 <div class="flex p-8">
     <!-- Left side with profile and user details -->
-    <div class="w-1/2 pr-4 bg_BoxLG p-4 rounded-lg shadow-md">
+    <div class="w-full pr-4 bg_BoxLG p-4 rounded-lg shadow-md">  <!-- Changed from w-1/2 to w-full for wider box -->
       <h1 class="text_G text-xl font-bold mb-2 bg_BoxG p-2 rounded">{{ user.name }}</h1>
       <p class="text_G">Email: {{ user.email }}</p>
       <p class="text_G">Region: {{ user.region }}</p>
       <p class="text_G">Parent Company: {{ user.parent_company }}</p>
 
-      <form method="POST" enctype="multipart/form-data" class="mt-4">
+      <!-- <form method="POST" enctype="multipart/form-data" class="mt-4">
         {% csrf_token %}
-        <input type="file" name="profile_image" id="profile_image" class="mb-4">
-        <button type="submit" class="bg-green-500 px-4 py-2 rounded text-white">Upload Image</button>
-      </form>
+        <label for="profile_image" class="block text-sm font-medium text-gray-700">Profile Image</label>
+        <input type="file" name="profile_image" id="profile_image" class="mb-4 block w-full text-sm text-gray-500
+          file:mr-4 file:py-2 file:px-4
+          file:rounded file:border-0
+          file:text-sm file:font-semibold
+          file:bg-green-50 file:text-green-700
+          hover:file:bg-green-100
+        ">
+        <button type="submit" class="bg-green-500 px-4 py-2 rounded text-white hover:bg-green-600">Upload Image</button>
+      </form> -->
       <!-- Display uploaded image if exists -->
       {% if user.profile_image %}
         <img src="{{ user.profile_image.url }}" alt="Profile Image" class="w-48 h-48 mt-4">
@@ -24,11 +31,11 @@
     </div>
 
     <!-- Right side with map -->
-    <div class="w-1/2 pl-4">
+    <!-- <div class="w-1/2 pl-4">
       <div id="map" class="h-64 w-full bg-gray-300 rounded-lg shadow-md"></div>
-    </div>
+    </div> -->
 </div>
-<script>
+<!-- <script>
     // Initialize and add the map
     function initMap() {
         const location = { lat: -34.397, lng: 150.644 }; // Adjust with real coordinates
@@ -43,5 +50,5 @@
     }
 </script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
-</script>
+</script> -->
 {% endblock %}

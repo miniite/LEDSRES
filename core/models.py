@@ -36,6 +36,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     eth_address = models.CharField(max_length=200, null=True, blank=True)
+    private_address = models.CharField(max_length=200, null=True, blank=True)
 
     objects = CustomUserManager()
 
@@ -58,6 +59,7 @@ class Address(models.Model):
 
 
 class Auction(models.Model):
+    contract_id = models.IntegerField(default=0)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     start_bid = models.DecimalField(max_digits=10, decimal_places=2)
     current_bid = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

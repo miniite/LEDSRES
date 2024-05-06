@@ -9,193 +9,26 @@ from .forms import SignUpForm
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.http import HttpResponse
 from django.utils import timezone
+from django.conf import settings
+
+import os
+
+
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+from tensorflow.keras.initializers import Orthogonal
+
+
+
+
 
 from .models import Auction, Bid
 from web3 import Web3, HTTPProvider
-
-
-
-web3 = Web3(Web3.HTTPProvider('https://eth-sepolia.g.alchemy.com/v2/FK4PztcimYW1P23ms-eb5wtGjNRFBbj0'))  # Update this URL
-
-
-contract_address = '0x0796b731C0a3e2e00363D45Ee0b21FEe79509C9A'
-contract_abi = [
-	{
-		"anonymous": False,
-		"inputs": [
-			{
-				"indexed": False,
-				"internalType": "uint256",
-				"name": "auctionId",
-				"type": "uint256"
-			},
-			{
-				"indexed": False,
-				"internalType": "uint256",
-				"name": "endTime",
-				"type": "uint256"
-			},
-			{
-				"indexed": False,
-				"internalType": "address",
-				"name": "beneficiary",
-				"type": "address"
-			}
-		],
-		"name": "AuctionCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": False,
-		"inputs": [
-			{
-				"indexed": False,
-				"internalType": "uint256",
-				"name": "auctionId",
-				"type": "uint256"
-			},
-			{
-				"indexed": False,
-				"internalType": "address",
-				"name": "winner",
-				"type": "address"
-			},
-			{
-				"indexed": False,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "AuctionEnded",
-		"type": "event"
-	},
-	{
-		"anonymous": False,
-		"inputs": [
-			{
-				"indexed": False,
-				"internalType": "uint256",
-				"name": "auctionId",
-				"type": "uint256"
-			},
-			{
-				"indexed": False,
-				"internalType": "address",
-				"name": "bidder",
-				"type": "address"
-			},
-			{
-				"indexed": False,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "BidPlaced",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "duration",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address payable",
-				"name": "beneficiary",
-				"type": "address"
-			}
-		],
-		"name": "createAuction",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "auctionId",
-				"type": "uint256"
-			}
-		],
-		"name": "endAuction",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "auctionId",
-				"type": "uint256"
-			}
-		],
-		"name": "placeBid",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "auctionCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "auctionData",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "beneficiary",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "endTime",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "highestBidder",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "highestBid",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "ended",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-]
-
-web3.eth.default_account = '0xcAa25d054cD09Df5D8d5Cd170094B5e55a1c745f'
-
-contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+from .utils import create_auction, bt_place_bid
+from .predict import predict_future_values
 
 
 # Create your views here.
@@ -295,24 +128,15 @@ def auctionCreate(request):
         end_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
         user = request.user
         duration = int((end_date - timezone.now()).total_seconds()) 
-        beneficiary_address = user.eth_address
+        beneficiary_address = user.private_address
+        auction_id = create_auction(start_bid, duration, beneficiary_address)
 
-        breakpoint()
-        tx_hash = contract.functions.createAuction(
-            duration,
-            str(beneficiary_address)
-        ).transact({'from': web3.eth.default_account})  # Ensure the default_account is set correctly
-        
-        # Wait for transaction to be mined
-        receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-        if receipt.status:
-            auction = Auction.objects.create(quantity=quantity, start_bid=start_bid, end_date=end_date, owner=user, contract_address=contract_address)
+        if auction_id:
+            auction = Auction.objects.create(quantity=quantity, start_bid=start_bid, end_date=end_date, owner=user, contract_id=auction_id)
             messages.success(request, "Auction created successfully on the blockchain.")
         else:
             messages.error(request, "Failed to create auction on the blockchain.")
-        
 
-        auction = Auction.objects.create(quantity=quantity, start_bid=start_bid, end_date=end_date, owner=user)
         return redirect('trade')  # Redirect to the list of auctions
     return render(request, 'auction-create.html')
 
@@ -337,14 +161,10 @@ def place_bid(request, auction_id):
 
     if request.method == 'POST':
         bid_amount = request.POST.get('bid_amount')
+        pk = request.user.private_address
         if bid_amount:
-            tx_hash = contract.functions.bid(auction_id).transact({
-                'from': web3.eth.default_account,  # Set to the current user's address
-                'value': web3.to_wei(bid_amount, 'ether')
-            })
-            
-            # Wait for transaction to be mined
-            receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+            acution_id = auction.contract_id
+            receipt = bt_place_bid(auction_id, bid_amount, pk)
             if receipt.status:
                 messages.success(request, "Bid placed successfully on the blockchain.")
             
@@ -356,3 +176,120 @@ def place_bid(request, auction_id):
             messages.error(request, "Please enter a valid bid amount.")
 
     return render(request, 'auction-create.html', {'auction': auction, 'user':request.user})
+
+
+
+from django.core.files.storage import FileSystemStorage
+import pandas as pd
+from joblib import load
+
+
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+from joblib import load
+import numpy as np
+
+def insights(request):
+    if request.method == 'POST' and 'file' in request.FILES:
+        myfile = request.FILES['file']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+
+        try:
+            with fs.open(filename, 'rb') as file:
+                df = pd.read_excel(file)
+                df['Date'] = pd.to_datetime(df['Date'])
+                df.set_index('Date', inplace=True)
+
+                # Apply the same feature engineering as during training
+                apply_feature_engineering(df)  # Ensure this function aligns with training
+
+                # Check if feature count is correct
+                expected_feature_count = 29  # Replace with the number of features your scaler expects
+                feature_columns = [col for col in df.columns if col != 'Generation']
+                if len(feature_columns) != expected_feature_count:
+                    raise ValueError(f"Expected {expected_feature_count} features, but got {len(feature_columns)}")
+
+                best_model_path = os.path.join(settings.BASE_DIR, "static", "model", "best_model.h5")
+                best_model = load_model(best_model_path)
+
+                # Load pre-fitted scalers
+                scaler_feature = load(os.path.join(settings.BASE_DIR, "static", "model", "scaler_feature.joblib"))
+                scaler_target = load(os.path.join(settings.BASE_DIR, "static", "model", "scaler_target.joblib"))
+
+                # Prepare data for prediction
+                last_known_features = scaler_feature.transform(df[feature_columns].iloc[-3:].values)
+
+                N = 3
+                future_steps = 7
+                max_actual_value = df['Generation'].max()
+
+                future_power_generation = predict_future_values(
+                    best_model, last_known_features, scaler_feature, scaler_target, N, future_steps, max_actual_value)
+
+                last_date = df.index[-1]
+                future_dates = pd.date_range(start=last_date, periods=future_steps + 1, freq='D')[1:]
+
+                plt.figure(figsize=(15, 7))
+                plt.plot(future_dates, future_power_generation, 'r--', label='Predicted Future Power Generation')
+                plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+                plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                plt.gcf().autofmt_xdate()
+                plt.ylim(0, max(future_power_generation))
+                plt.title('Predicted Future Power Generation')
+                plt.xlabel('Date')
+                plt.ylabel('Power Generation')
+                plt.legend()
+
+                plot_path = os.path.join(settings.MEDIA_ROOT, 'future_power_generation.png')
+                plt.savefig(plot_path)
+                plt.close()
+
+                context = {'plot_url': settings.MEDIA_URL + 'future_power_generation.png'}
+                return render(request, 'graph.html', context)
+        except Exception as e:
+            print(e)
+            return render(request, 'trade.html', {'error': str(e)})
+
+    return render(request, "insight.html")
+
+def apply_feature_engineering(df):
+    # Implement the exact same transformations here as you did when training the model
+    # For example:
+    df['rolling_mean'] = df['Generation'].rolling(window=3).mean()
+    df['rolling_std'] = df['Generation'].rolling(window=3).std()
+    df.dropna(inplace=True)
+    return df
+
+def predict_future_values(model, last_known_features, scaler_feature, scaler_target, N, future_steps, max_actual_value):
+    future_predictions = []
+    current_features = last_known_features.copy()
+
+    for _ in range(future_steps):
+        current_features_scaled = scaler_feature.transform(current_features[-N:])
+        current_features_scaled = current_features_scaled.reshape(1, N, -1)
+        
+        # Predict the next value
+        next_prediction_scaled = model.predict(current_features_scaled)
+        next_prediction = scaler_target.inverse_transform(next_prediction_scaled).ravel()[0]
+        
+        # Ensure prediction is non-negative and does not exceed slightly above the maximum actual value
+        next_prediction = max(0, min(next_prediction, max_actual_value * 1.05))
+        
+        # Append the prediction to the list
+        future_predictions.append(next_prediction)
+        
+        # Add the next prediction to the current_features
+        next_feature = np.zeros((1, current_features.shape[1]))
+        next_feature[:, -1] = next_prediction  # Assuming last feature is the predicted feature
+        current_features = np.vstack([current_features, next_feature])
+    
+    return future_predictions

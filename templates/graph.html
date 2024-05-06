@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'partials/navbar.html' %}
+
+
+
+<div class="flex justify-center items-center min-h-screen bg-gray-100">
+    <div class="py-8 px-4 shadow-lg rounded-lg bg-white">
+        <div class="mb-4">
+            <h1 class="text-xl font-semibold text-gray-800">Predicted Future Power Generation</h1>
+        </div>
+        <div>
+            <!-- Display the plot image -->
+            <img src="{{ plot_url }}" alt="Future Power Generation" class="mx-auto">
+        </div>
+    </div>
+</div>
+
+
+{% include 'partials/footer.html' %}
+{% endblock content %}
