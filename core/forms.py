@@ -6,12 +6,14 @@ from django.contrib.auth import get_user_model
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
+    email = forms.EmailField(max_length=20, help_text=('Required. Inform a valid email address.'))
     region = forms.ChoiceField(choices=[('North Malabar', 'North Malabar'), ('North', 'North'), ('Central', 'Central'), ('South', 'South')])
 
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2', 'region')
+
+
 
     def save(self, commit=True):
         user = super().save(commit=False)

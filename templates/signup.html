@@ -2,27 +2,34 @@
 {% load static %}
 
 {% block content %}
+
 <section class="bg_LG min-h-screen flex items-center justify-center">
-    <div class="w-full grid grid-cols-2">
-        <div class="col-span flex items-center justify-left">
-          <div>
-            <img class="w-full h-full object-cover" src="https://i.ibb.co/N7dvDyM/PIC-4.png" alt="login_pic">
-          </div>
+    <div class="w-full flex flex-row">
+        <div class="w-1/2 flex items-center justify-center">
+            <img class="h-screen w-full object-cover" src="https://i.ibb.co/N7dvDyM/PIC-4.png" alt="login_pic">
         </div>
-        <div class="flex col-span-1 items-center justify-center">
-            <div class="p-6 space-y-4">
-                <h1 class="text_G text-5xl font-bold leading-tight tracking-tight">
-                Create an Account
-                </h1>
+        <div class="w-1/2 flex items-center justify-center">
+            <div class="w-full max-w-md p-6">
+                <h1 class="text-5xl font-bold text-center text_G mb-6">Create Account</h1>
                 <form class="space-y-4" method="POST">
                 {% csrf_token %}
                 {% for field in form %}
                 <div>
                     <label for="{{ field.id_for_label }}" class="text_G block mb-2 text-sm font-medium">{{ field.label }}</label>
+                    {% if field.name == 'region' %}
+                    <!-- Render a select element for the 'region' field -->
+                    <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="text-black bg_BoxLG border_black sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5">
+                        {% for key, value in field.field.choices %}
+                        <option value="{{ key }}" {% if field.value == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <!-- Render input element for other fields -->
                     <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}" 
-                           class="text_G bg_BoxLG border_black sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5 dark:placeholder-gray-400 dark:focus:ring-emerald-500 dark:focus:border-emerald-500"
-                           value="{{ field.value|default_if_none:'' }}" 
-                           {% if field.field.required %}required{% endif %}>
+                        class="text-black bg_BoxLG border_black sm:text-sm rounded-lg focus:ring-emerald-600 focus:border-emerald-600 block w-full p-2.5"
+                        value="{{ field.value|default_if_none:'' }}" 
+                        {% if field.field.required %}required{% endif %}>
+                    {% endif %}
                     {% if field.errors %}
                         {% for error in field.errors %}
                             <div style="color: red;">{{ error }}</div>
@@ -32,10 +39,10 @@
                 {% endfor %}
                 <div class="flex items-center justify-between">
                     <div class="flex items-start">
-                        <input id="remember" type="checkbox" name="remember" class="w-4 h-4 border_black rounded bg-gray-50 focus:ring-3 focus:ring-emerald-300 dark:focus:ring-emerald-600 dark:ring-offset-gray-800">
+                        <input id="remember" type="checkbox" name="remember" class="w-4 h-4 border_black rounded focus:ring-3 focus:ring-emerald-300">
                         <label for="remember" class="ml-3 text-sm text_G">Remember me</label>
                     </div>
-                    <a href="#" class="text-sm font-medium text_G hover:underline">Forgot password?</a>
+                    <a href="/login" class="text-sm font-medium text_G hover:underline">Already have an Account?</a>
                 </div>
                 <button type="submit" class="w-full text_LG bg_G hover:bg_LG focus:ring-4 focus:outline-none focus:ring-emerald-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-emerald-800">Sign up</button>
                 </form>

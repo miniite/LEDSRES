@@ -31,7 +31,13 @@ class CustomUserManager(BaseUserManager):
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    region = models.CharField(max_length=100)
+    REGION_CHOICES = [
+        ('North Malabar', 'North Malabar'),
+        ('North', 'North'),
+        ('Central', 'Central'),
+        ('South', 'South')
+    ]
+    region = models.CharField(max_length=100, choices=REGION_CHOICES)
     parent_company = models.CharField(max_length=200)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

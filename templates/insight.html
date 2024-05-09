@@ -3,17 +3,20 @@
 {% block content %}
 {% include 'partials/navbar.html' %}
 
+
+<section class="bg_LG">
 <!-- Flex container to center the form in the middle of the screen -->
 <div class="flex justify-center items-center w-full h-screen">
     <!-- Form for file upload -->
     <form action="{% url 'insights' %}" method="post" enctype="multipart/form-data" class="flex flex-col items-center">
         {% csrf_token %}
         <!-- File input -->
-        <input type="file" name="file" class="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 mb-4" id="file-upload">
+        <input type="file" name="file" class="cursor-pointer Bbg_G text_LG font-bold py-2 px-4 rounded  mb-4" id="file-upload">
         <!-- Submit button -->
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer">Upload</button>
+        <button type="submit" class="Bbg_G text_LG font-bold py-2 px-4 rounded cursor-pointer">Upload</button>
     </form>
 </div>
 
 {% include 'partials/footer.html' %}
 {% endblock content %}
+</section>

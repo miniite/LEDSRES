@@ -10,7 +10,7 @@ abi = [
 		"anonymous": False,
 		"inputs": [
 			{
-				"indexed": False,
+				"indexed": True,
 				"internalType": "uint256",
 				"name": "id",
 				"type": "uint256"
@@ -20,6 +20,12 @@ abi = [
 				"internalType": "address",
 				"name": "owner",
 				"type": "address"
+			},
+			{
+				"indexed": False,
+				"internalType": "uint256",
+				"name": "startBid",
+				"type": "uint256"
 			},
 			{
 				"indexed": False,
@@ -35,7 +41,7 @@ abi = [
 		"anonymous": False,
 		"inputs": [
 			{
-				"indexed": False,
+				"indexed": True,
 				"internalType": "uint256",
 				"name": "id",
 				"type": "uint256"
@@ -73,7 +79,7 @@ abi = [
 		"anonymous": False,
 		"inputs": [
 			{
-				"indexed": False,
+				"indexed": True,
 				"internalType": "uint256",
 				"name": "id",
 				"type": "uint256"
@@ -92,6 +98,31 @@ abi = [
 			}
 		],
 		"name": "BidPlaced",
+		"type": "event"
+	},
+	{
+		"anonymous": False,
+		"inputs": [
+			{
+				"indexed": True,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": False,
+				"internalType": "address",
+				"name": "bidder",
+				"type": "address"
+			},
+			{
+				"indexed": False,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "BidRefunded",
 		"type": "event"
 	},
 	{
@@ -173,6 +204,30 @@ abi = [
 		],
 		"stateMutability": "view",
 		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "bids",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]
 
@@ -180,7 +235,7 @@ infura_url = "https://sepolia.infura.io/v3/c22cb83633ff42cbab662e654c1f7834"
 web3 = Web3(Web3.HTTPProvider(infura_url))
 print("Connected:", web3.is_connected())
 
-contract_address = "0x9F1d5a6C0f2C3906784Afab618735b4996290a0F"
+contract_address = "0x69a7D6fa5A2FeD4E09FF20Aa0eb7dcB06adcbeb9"
 contract_abi = abi
 checksum_address = Web3.to_checksum_address(contract_address)
 
@@ -209,7 +264,12 @@ def create_auction(start_bid, duration, pk):
         print("Transaction hash:", txn_hash.hex())
 
         receipt = web3.eth.wait_for_transaction_receipt(txn_hash)
-        return receipt
+        for log in receipt.logs:
+            event = contract.events.AuctionCreated().process_receipt(receipt)
+            if event:
+                    auction_id = event[0]['args']['id']
+                    print("Auction ID:", auction_id)
+                    return auction_id
 
     except Exception as e:
         print("An error occurred:", e)

@@ -82,25 +82,32 @@ def CustomLogout(request):
 
 
 def registration(request):
-    if request.method == 'POST':
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('login'))  # Redirect to the login page after successful registration
+
+        if request.method == 'POST':
+            form = SignUpForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Your account has been created successfully! You can now log in.')
+                return redirect(reverse('login'))  # Redirect to the login page after successful registration
+            else:
+                # If the form is not valid, rerender the signup page with the form to show errors
+                return render(request, 'signup.html', {'form': form})
         else:
-            # If the form is not valid, rerender the signup page with the form to show errors
-            return render(request, 'signup.html', {'form': form})
-    else:
-        form = SignUpForm()
-    return render(request, 'signup.html', {'form': form})
+            form = SignUpForm()
+            
+        print(form.fields['region'].choices)     
+        return render(request, 'signup.html', {'form': form})
+
 
 
 # def joinning(request):
 #     return render(request,"signup.html")
 
+@login_required
 def prof(request):
     return render(request,"profile.html")
 
+@login_required
 def into_insight(request):
     return render(request,"insight.html")
 
@@ -110,7 +117,7 @@ def logout_view(request):
     return redirect('/') 
 
 
-
+@login_required
 def auctions(request):
     current_time = timezone.now()
     auctions = Auction.objects.filter(end_date__gte=current_time).order_by('end_date')
@@ -164,7 +171,8 @@ def place_bid(request, auction_id):
         pk = request.user.private_address
         if bid_amount:
             acution_id = auction.contract_id
-            receipt = bt_place_bid(auction_id, bid_amount, pk)
+            breakpoint()
+            receipt = bt_place_bid(auction_id, int(bid_amount), pk)
             if receipt.status:
                 messages.success(request, "Bid placed successfully on the blockchain.")
             
@@ -195,6 +203,7 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import load_model
 from joblib import load
 import numpy as np
+
 
 def insights(request):
     if request.method == 'POST' and 'file' in request.FILES:
@@ -268,6 +277,7 @@ def apply_feature_engineering(df):
     df['rolling_std'] = df['Generation'].rolling(window=3).std()
     df.dropna(inplace=True)
     return df
+
 
 def predict_future_values(model, last_known_features, scaler_feature, scaler_target, N, future_steps, max_actual_value):
     future_predictions = []
